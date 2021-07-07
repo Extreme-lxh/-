@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.sys.dao.ClCourseTimeDao">
+
+    <select id="checkCourseTime" resultType="int">
+        select count(course_time_id) from cl_course_time
+          where room_id=#{entity.roomId}
+                and week=#{entity.week}
+                and course_id in
+                  (select course_id
+                    from cl_course
+                      where unix_timestamp(#{startDate}) &gt;= unix_timestamp(cl_course.start_date)
+                            and unix_timestamp(#{startDate}) &lt;= unix_timestamp(cl_course.finish_date))
+                and #{entity.beginTime} &gt;= cl_course_time.begin_time
+                and #{entity.beginTime} &lt;= cl_course_time.finish_time
+    </select>
+
+    <select id="getPageList" resultType="io.renren.modules.sys.entity.ClCourseTimeEntity">
+        select cl_course_time.*,
+                cl_course.course_name,cl_course.course_class,
+                cl_course.start_date as courseStartDate,
+                cl_course.finish_date as courseFinishDate,
+                cl_room.room_name,cl_room.teaching_building_name
+          from cl_course_time,cl_course,cl_room
+            where cl_course.course_id=cl_course_time.course_id and cl_course_time.room_id=cl_room.room_id
+              <if test="roomId != null">
+                  and room_id=#{roomId}
+              </if>
+                <if test="week != null">
+                    and week=#{week}
+                </if>
+                <if test="className != null and className != ''">
+                    and cl_course.class_name like concat('%',#{className},'%')
+                </if>
+                <if test="courseName != null and courseName != ''">
+                    and cl_course.course_name like concat('%',#{courseName},'%')
+                </if>
+            order by create_time desc
+    </select>
+
+    <select id="courseByDate" resultType="io.renren.modules.sys.entity.ClCourseTimeEntity">
+        select cl_course_time.*,cl_course.course_name,cl_course.course_class
+          from cl_course_time,cl_course
+         where room_id=#{roomId} and week=#{week}
+          and cl_course_time.course_id=cl_course.course_id
+          and unix_timestamp(#{date}) &gt;= unix_timestamp(cl_course.start_date)
+          and unix_timestamp(#{date}) &lt;= unix_timestamp(cl_course.finish_date)
+          order by begin_time asc
+    </select>
+
+</mapper>

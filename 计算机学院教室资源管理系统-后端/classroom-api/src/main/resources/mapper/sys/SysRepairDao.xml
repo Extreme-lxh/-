@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.sys.dao.SysRepairDao">
+
+    <select id="getPageList" resultType="io.renren.modules.sys.entity.SysRepairEntity">
+
+        select sys_repair.*,sys_user.username as repaireUserName,cl_room_materiel.type as materielType,
+          cl_room.room_name,cl_room.teaching_building_name
+          from sys_repair,sys_user,cl_room,cl_room_materiel
+          where sys_user.user_id = sys_repair.repair_user_id
+              and cl_room_materiel.materiel_id=sys_repair.materiel_id
+              and cl_room.room_id = cl_room_materiel.room_id
+            <if test="roomId != null">
+                and cl_room.room_id = #{roomId}
+            </if>
+            <if test="userId != null">
+                and sys_repair.repair_user_id = #{userId}
+            </if>
+            <if test="state != null">
+                and sys_repair.repair_state = #{state}
+            </if>
+          order by create_time desc
+
+    </select>
+
+</mapper>

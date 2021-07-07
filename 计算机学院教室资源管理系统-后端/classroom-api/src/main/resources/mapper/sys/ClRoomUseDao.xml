@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.sys.dao.ClRoomUseDao">
+
+    <select id="checkHaveUse" resultType="int">
+        select count(use_id) from cl_room_use
+          where room_id=#{rommId} and apply_state=1
+            and unix_timestamp(#{date})=unix_timestamp(use_date)
+            and #{startTime} &gt;= use_start_time and #{startTime} &lt;= use_end_time
+    </select>
+
+    <select id="getPageList" resultType="io.renren.modules.sys.entity.ClRoomUseEntity">
+        select cl_room_use.*,cl_room.room_name,cl_room.teaching_building_name
+         from cl_room_use,cl_room
+         where cl_room_use.room_id=cl_room.room_id
+            <if test="roomId != null">
+                and cl_room_use.room_id=#{roomId}
+            </if>
+            <if test="applyState != null">
+                and apply_state=#{applyState}
+            </if>
+            <if test="applyUserName != null and applyUserName != ''">
+                and cl_room_use.apply_user_name like concat('%',#{applyUserName},'%')
+            </if>
+            <if test="useDate != null">
+                and unix_timestamp(use_date)=unix_timestamp(#{useDate})
+            </if>
+        order by create_time desc
+
+    </select>
+
+    <select id="mylist" resultType="io.renren.modules.sys.entity.ClRoomUseEntity">
+        select cl_room_use.*,cl_room.room_name,cl_room.teaching_building_name
+         from cl_room_use,cl_room
+          where cl_room_use.room_id=cl_room.room_id and apply_user_id=#{userId}
+          order by create_time desc
+    </select>
+
+    <select id="useByDate" resultType="io.renren.modules.sys.entity.ClRoomUseEntity">
+        select cl_room_use.* from cl_room_use
+          where unix_timestamp(use_date)=unix_timestamp(#{date})
+            and room_id=#{roomId} and apply_state=1
+            order by use_start_time asc
+    </select>
+
+</mapper>

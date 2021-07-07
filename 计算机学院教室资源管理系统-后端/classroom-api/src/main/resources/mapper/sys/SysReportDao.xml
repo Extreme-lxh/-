@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.sys.dao.SysReportDao">
+
+    <select id="getPageList" resultType="io.renren.modules.sys.entity.SysReportEntity">
+        select sys_report.*,sys_user.username as reportUsername,
+                cl_room.room_name,cl_room.teaching_building_name
+                from sys_report,sys_user,cl_room
+                where sys_user.user_id = sys_report.report_user_id
+                      and cl_room.room_id = sys_report.report_room_id
+                      <if test="roomId != null">
+                          and sys_report.report_room_id = #{roomId}
+                      </if>
+                      <if test="userName !=null and userName != ''">
+                          and sys_user.username like concat('%',#{userName},'%')
+                      </if>
+                order by create_time desc
+    </select>
+
+    <select id="myLog" resultType="io.renren.modules.sys.entity.SysReportEntity">
+        select sys_report.*,cl_room.room_name,cl_room.teaching_building_name
+        from sys_report,cl_room
+        where sys_report.report_user_id=#{userId}
+          and cl_room.room_id = sys_report.report_room_id
+          order by create_time desc
+    </select>
+
+</mapper>
